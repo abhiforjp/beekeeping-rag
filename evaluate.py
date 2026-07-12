@@ -11,10 +11,7 @@ answer using TWO metrics (the assignment asks for either; we do both):
 
 A question PASSES if keyword overlap >= 0.6 OR cosine similarity >= 0.70.
 
-Usage:
-    python evaluate.py               # evaluates the simple pipeline
-    python evaluate.py --langchain   # evaluates the LangChain pipeline
-"""
+
 
 import re
 import sys
