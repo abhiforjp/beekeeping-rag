@@ -31,7 +31,6 @@ class Retriever:
     def __init__(self, chunks: list[str]):
         self.chunks = chunks
         self.model = SentenceTransformer(EMBED_MODEL)
-        # normalize_embeddings=True -> dot product == cosine similarity
         self.embeddings = self.model.encode(chunks, normalize_embeddings=True)
 
     def retrieve(self, query: str, k: int = TOP_K) -> list[tuple[str, float]]:
