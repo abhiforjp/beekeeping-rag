@@ -1,15 +1,3 @@
-"""
-LangChain version of the same RAG pipeline (still 100% free).
-
-Stack:
-  - Splitter    : RecursiveCharacterTextSplitter
-  - Embeddings  : HuggingFaceEmbeddings (all-MiniLM-L6-v2, local)
-  - Vector store: InMemoryVectorStore (built into langchain-core)
-  - LLM         : ChatGroq (llama-3.1-8b-instant, free tier) — needs GROQ_API_KEY
-
-Usage:
-    python rag_langchain.py
-"""
 
 import os
 
