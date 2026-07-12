@@ -1,17 +1,3 @@
-"""
-Simple RAG pipeline (no frameworks) — Advanced Beekeeping Techniques.
-
-Stack (100% free):
-  - Embeddings : sentence-transformers "all-MiniLM-L6-v2" (runs locally, no key)
-  - Vector math: numpy cosine similarity (the dataset is tiny, no DB needed)
-  - LLM       : Groq free API (llama-3.1-8b-instant). Set env var GROQ_API_KEY.
-                If no key is set, falls back to returning the best chunk
-                (extractive mode), so the demo never breaks.
-
-Usage:
-    python rag_pipeline.py                # answers the 3 assignment questions
-    python rag_pipeline.py "your question"
-"""
 
 import os
 import sys
