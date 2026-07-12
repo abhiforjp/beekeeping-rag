@@ -44,24 +44,21 @@ Question ──> Embedding ──> similarity search ─┘──> top-k chunks
 git clone <your-repo-url>
 cd beekeeping-rag
 python -m venv venv
-venv\Scripts\activate        # Windows  (macOS/Linux: source venv/bin/activate)
+venv\Scripts\activate        
 pip install -r requirements.txt
 ```
 
-Get a free API key at https://console.groq.com (no credit card), then:
 
-```bash
-set GROQ_API_KEY=your_key_here      # Windows CMD
-# $env:GROQ_API_KEY="your_key"      # PowerShell
-# export GROQ_API_KEY=your_key      # macOS/Linux
+
+
 ```
 
-## Run
+
 
 ```bash
-python rag_pipeline.py        # answer the 3 assignment questions (shows retrieved chunks + similarity scores)
-python rag_langchain.py       # same, via LangChain
-python evaluate.py            # evaluation: keyword overlap + cosine similarity per question
+python rag_pipeline.py        
+python rag_langchain.py      
+python evaluate.py            
 python evaluate.py --langchain
 ```
 
