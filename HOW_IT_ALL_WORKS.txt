@@ -1,0 +1,212 @@
+HOW IT ALL WORKS — PLAIN ENGLISH GUIDE
+=======================================
+(Read this before recording your video. If you can explain everything in
+this file in your own words, you understand the assignment.)
+
+
+1. THE PROBLEM WE'RE SOLVING
+----------------------------
+An AI model like ChatGPT only knows what it read during training. It has
+never seen YOUR document about beekeeping. If you ask it "what temperature
+should a Langstroth hive be in winter?", it might guess — and guessing
+confidently is called "hallucination".
+
+RAG (Retrieval-Augmented Generation) is the fix. The idea in one sentence:
+
+    Before asking the AI a question, LOOK UP the relevant text from your
+    document and paste it into the question, like handing someone an
+    open-book exam instead of a closed-book one.
+
+"Retrieval" = the looking-up part.
+"Generation" = the AI writing the answer part.
+
+
+2. THE BIG PICTURE (what happens when you ask a question)
+---------------------------------------------------------
+    Your document                Your question
+         |                            |
+    split into chunks           turn into numbers
+         |                            |
+    turn each chunk                   |
+    into numbers                      |
+         |                            |
+         +-------> compare them <-----+
+                       |
+              pick the 2 most similar chunks
+                       |
+        "Here is some context: <chunks>.
+         Now answer: <question>"  ---> sent to the AI
+                       |
+                    ANSWER
+
+
+3. STEP BY STEP, IN DETAIL
+--------------------------
+
+STEP A — CHUNKING (cutting the document into pieces)
+The document gets split into small pieces called "chunks". Ours has only
+4 sentences, so each sentence becomes one chunk. Why split at all? Because
+later we want to fetch only the RELEVANT piece, not the whole document.
+Think of it like cutting a textbook into index cards — you can hand someone
+just the one card they need.
+
+STEP B — EMBEDDINGS (turning text into numbers)
+Computers can't compare "meanings" of sentences directly, but they can
+compare numbers. An "embedding model" converts any sentence into a long
+list of numbers (384 numbers in our case) called a VECTOR. The magic
+property: sentences with similar MEANING get similar numbers.
+
+    "mice entering the hive"     -> [0.12, -0.83, 0.44, ...]
+    "rodents getting inside"     -> [0.11, -0.79, 0.41, ...]  (very close!)
+    "temperature management"     -> [0.91,  0.05, -0.6, ...]  (far away)
+
+We use a free model called "all-MiniLM-L6-v2" that runs on your own
+laptop — no API key, no cost. Every chunk gets converted once and stored.
+
+STEP C — RETRIEVAL (finding the right chunk for a question)
+When a question comes in, we convert IT into numbers too, using the same
+model. Then we measure how "close" the question's vector is to each
+chunk's vector. The measure is called COSINE SIMILARITY — technically the
+angle between two arrows in space, but all you need to know:
+
+    1.0  = identical meaning
+    0.0  = unrelated
+    Higher = more similar.
+
+We rank all chunks by this score and keep the top 2 (that's the "k=2" or
+"top-k" you see in the code). Those 2 chunks are our "context".
+
+STEP D — GENERATION (the AI writes the answer)
+We build a prompt that looks like this:
+
+    "Answer the question using ONLY the context below.
+     Context: <the 2 chunks we retrieved>
+     Question: <the user's question>"
+
+and send it to a large language model (LLM). We use Llama 3.1 running on
+Groq's servers because their API is free. The "ONLY the context" wording
+is important — it forbids the model from using its own memory, which
+prevents hallucination. We also set "temperature=0", which means "no
+creativity, give the same answer every time" — important because we want
+our evaluation to be repeatable.
+
+If you haven't set a Groq API key, rag_pipeline.py has a backup plan: it
+just returns the best chunk as-is. That's called an "extractive" answer
+(extracted straight from the document, no AI rewriting).
+
+
+4. THE TWO PIPELINE FILES (why there are two)
+---------------------------------------------
+rag_pipeline.py  — everything built by hand, ~100 lines. You can see every
+                   gear turning: chunking, embedding, similarity math,
+                   prompt building. USE THIS ONE IN YOUR VIDEO — it proves
+                   you understand the mechanics.
+
+rag_langchain.py — the exact same thing built with LangChain, a popular
+                   framework that gives you pre-made building blocks
+                   (text splitter, vector store, LLM wrapper). Less code
+                   to write, more magic hidden. It's in the repo to show
+                   you also know the industry tooling.
+
+Same input, same output — one is hand-made, one is from a kit.
+
+
+5. THE EVALUATION SCRIPT (evaluate.py)
+--------------------------------------
+The assignment gives 3 questions with known correct answers. The script
+asks the RAG system each question, then compares the generated answer to
+the expected answer in two ways:
+
+METRIC 1 — KEYWORD OVERLAP
+Take the expected answer, throw away filler words ("the", "to", "of"...),
+keep the meaningful words. Then check: what fraction of those words appear
+in the generated answer?
+
+    Expected : "To prevent field mice from entering."
+    Keywords : prevent, field, mice, entering
+    Generated: "Entrance reducers prevent field mice from entering."
+    Found    : all 4 of 4  ->  score 1.00
+
+METRIC 2 — COSINE SIMILARITY (again!)
+Same trick as retrieval, different use: convert BOTH answers to vectors
+and measure closeness. This catches cases where the wording differs but
+the meaning matches ("stop rodents getting in" vs "prevent field mice from
+entering" — low keyword overlap, high cosine similarity).
+
+A question PASSES if keyword overlap >= 0.6 OR cosine similarity >= 0.70.
+Two metrics because each covers the other's blind spot: keyword overlap is
+strict about exact words, cosine understands paraphrases.
+
+
+6. EVERY FILE IN THE FOLDER
+---------------------------
+data/beekeeping.txt   The dataset (the 4-sentence document from the
+                      assignment). The only "knowledge" the system has.
+
+rag_pipeline.py       The from-scratch RAG pipeline (see section 4).
+
+rag_langchain.py      The LangChain version (see section 4).
+
+evaluate.py           Asks the 3 questions, scores the answers, prints
+                      PASS/FAIL per question and a total (see section 5).
+
+requirements.txt      Shopping list of Python libraries. "pip install -r
+                      requirements.txt" installs them all in one go.
+
+README.md             The front page of your GitHub repo — setup steps,
+                      how to run, design decisions. Graders read this first.
+
+.gitignore            Tells git which files to NEVER upload: __pycache__
+                      (auto-generated junk), venv (your local library
+                      folder, huge), .env (would contain secret keys).
+
+HOW_IT_ALL_WORKS.txt  This file.
+
+
+7. JARGON CHEAT SHEET (for the video / interview)
+-------------------------------------------------
+LLM ............... Large Language Model — the AI that writes text (Llama,
+                    GPT, Claude).
+Hallucination ..... The model confidently making things up.
+Chunk ............. A small piece of a document.
+Embedding ......... A sentence converted to a list of numbers that captures
+                    its meaning.
+Vector ............ Just another name for that list of numbers.
+Vector store ...... A database of embeddings you can search by similarity.
+                    (Ours is so small we just use a plain array.)
+Cosine similarity . A 0-to-1 score of how similar two vectors (meanings) are.
+Top-k ............. Keep the k best matches (we use k=2).
+Temperature ....... The model's "creativity dial". 0 = deterministic,
+                    same answer every run.
+Prompt ............ The full text you send the model, including context
+                    and instructions.
+Grounding ......... Forcing the model to answer only from provided context.
+Extractive answer . Answer copied straight from the document, no AI rewriting.
+API key ........... Your personal password for a service (Groq here). Keep
+                    it out of code and out of GitHub — set it as an
+                    environment variable instead.
+Environment variable  A value stored in your terminal session, readable by
+                    programs but not written in any file.
+
+8. LIKELY INTERVIEW QUESTIONS AND SHORT ANSWERS
+-----------------------------------------------
+Q: Why chunk by sentence?
+A: The document is 4 sentences and each holds exactly one fact — one fact
+   per chunk makes retrieval precise. Bigger corpora need bigger chunks
+   with overlap so facts don't get cut in half.
+
+Q: Why top-k = 2 and not 1 or 4?
+A: k=1 risks missing context if a fact spans two sentences; k=4 is the
+   whole document, so retrieval would be pointless. 2 is a sensible middle.
+
+Q: Why two evaluation metrics?
+A: Keyword overlap is cheap and transparent but fails on paraphrases;
+   cosine similarity handles paraphrases but is less interpretable.
+   Together they cover each other's weaknesses.
+
+Q: Why temperature 0?
+A: Reproducibility. The evaluation must give the same result every run.
+
+Q: What would you improve with a bigger dataset?
+A: A real vector database (FAISS/Chroma), overlapping chunks, reranking of
+   retrieved results, and LLM-based evaluation metrics (e.g. RAGAS).

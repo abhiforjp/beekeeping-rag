@@ -1,0 +1,10 @@
+# Core (simple pipeline)
+sentence-transformers>=3.0
+numpy
+groq
+
+# LangChain pipeline (optional — only needed for rag_langchain.py)
+langchain-core
+langchain-text-splitters
+langchain-huggingface
+langchain-groq
