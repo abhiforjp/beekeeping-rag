@@ -38,29 +38,6 @@ Question ──> Embedding ──> similarity search ─┘──> top-k chunks
 - **LLM:** `llama-3.1-8b-instant` via the Groq free API
 - **Fallback:** if `GROQ_API_KEY` is not set, `rag_pipeline.py` returns the top retrieved chunk (extractive mode), so everything still runs offline
 
-## Setup
-
-```bash
-git clone <your-repo-url>
-cd beekeeping-rag
-python -m venv venv
-venv\Scripts\activate        
-pip install -r requirements.txt
-```
-
-
-
-
-```
-
-
-
-```bash
-python rag_pipeline.py        
-python rag_langchain.py      
-python evaluate.py            
-python evaluate.py --langchain
-```
 
 ## Evaluation method
 
@@ -91,4 +68,4 @@ RESULT: 3/3 questions passed
 
 ## Video walkthrough
 
-Link: `<paste your video link here>`
+Link: https://drive.google.com/file/d/1sUd5rZK0lWXkLz8VZiYzKVA0K8q6G1Hf/view?usp=sharing
