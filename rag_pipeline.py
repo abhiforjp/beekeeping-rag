@@ -18,12 +18,7 @@ ASSIGNMENT_QUESTIONS = [
 
 # ---------------------------------------------------------------- ingestion
 def load_and_chunk(path: str = DATA_PATH) -> list[str]:
-    """Read the dataset and split it into sentence-level chunks.
 
-    The document is only 4 sentences, so one sentence per chunk gives the
-    retriever maximum precision. For bigger corpora you would use a
-    recursive/overlapping splitter instead.
-    """
     with open(path, encoding="utf-8") as f:
         text = f.read().strip()
     return [s.strip() + "." for s in text.split(".") if s.strip()]
@@ -31,7 +26,7 @@ def load_and_chunk(path: str = DATA_PATH) -> list[str]:
 
 # ---------------------------------------------------------------- retrieval
 class Retriever:
-    """Embeds chunks once, then answers queries with cosine similarity."""
+
 
     def __init__(self, chunks: list[str]):
         self.chunks = chunks
